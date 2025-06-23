@@ -78,7 +78,7 @@ watchdog.pet()
 logger.debug("Initializing Config")
 config: Config = Config("config.json")
 
-mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, True)
+mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False)
 
 ## Init Buses ##
 # TODO(nateinaction): fix spi init
@@ -221,7 +221,9 @@ def heater_pulse() -> None:
 GPIO_RESET = initialize_pin(
     logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True
 )
+print("GPIO Reset Pin Initialized")
 mcp = MCP23017(i2c1)
+print("MCP23017 Initialized")
 
 # This sets up all of the GPIO pins on the MCP23017
 FACE4_ENABLE = mcp.get_pin(8)
@@ -239,6 +241,8 @@ Z_GPIO1 = mcp.get_pin(3)
 RF2_IO2 = mcp.get_pin(4)
 RF2_IO1 = mcp.get_pin(5)
 
+print("GPIO Pins Initialized")
+
 # This defines the direction of the GPIO pins
 FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
@@ -246,9 +250,13 @@ FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
 ENAB_RF.direction = digitalio.Direction.OUTPUT
+ENAB_RF.value = True  # Enable the RF
 VBUS_RESET.direction = digitalio.Direction.OUTPUT
+VBUS_RESET.value = True  # Enable the VBUS Reset
 ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
 PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
+
+print("GPIO Pins Direction Set")
 
 
 # Face Control Helper Functions
@@ -280,7 +288,7 @@ def all_faces_on():
 all_faces_on()
 
 time.sleep(0.1)  # Wait for the faces to power on
-# mux_reset.value = False  # Reset the multiplexer
+mux_reset.value = True  # Reset the multiplexer
 
 tca = TCA9548A(i2c1, address=int(0x77))
 
