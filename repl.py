@@ -29,8 +29,6 @@ import os
 
 from pysquared.protos.power_monitor import PowerMonitorProto
 
-import lib.pysquared.functions as functions
-import lib.pysquared.nvm.register as register
 from lib.adafruit_drv2605 import DRV2605  ### This is Hacky V5a Devel Stuff###
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  ### This is Hacky V5a Devel Stuff###
@@ -38,6 +36,7 @@ from lib.adafruit_mcp230xx.mcp23017 import (
 from lib.adafruit_mcp9808 import MCP9808  ### This is Hacky V5a Devel Stuff###
 from lib.adafruit_tca9548a import TCA9548A  ### This is Hacky V5a Devel Stuff###
 from lib.adafruit_veml7700 import VEML7700  ### This is Hacky V5a Devel Stuff###
+from lib.proveskit_rp2350_v5a.register import Register
 
 # from lib.pysquared.Big_Data import AllFaces  ### This is Hacky V5a Devel Stuff###
 from lib.pysquared.cdh import CommandDataHandler
@@ -50,19 +49,20 @@ from lib.pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from lib.pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
 from lib.pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 from lib.pysquared.hardware.radio.manager.sx1280 import SX1280Manager
+from lib.pysquared.hardware.solar_panel.xy_panel_manager import XYSolarPanelManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
-from lib.pysquared.nvm.flag import Flag
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
-from lib.pysquared.satellite import Satellite
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
 from version import __version__
 
 rtc = MicrocontrollerManager()
 
+error_count: Counter = Counter(index=Register.error_count)
+
 logger: Logger = Logger(
-    error_counter=Counter(index=register.ERRORCNT),
+    error_counter=error_count,
     colorized=True,
 )
 
@@ -111,10 +111,7 @@ i2c1 = initialize_i2c_bus(
 )
 
 ## Init Helper Classes ##
-
-c = Satellite(logger, config)
-
-sleep_helper = SleepHelper(c, logger, watchdog, config)
+sleep_helper = SleepHelper(logger, watchdog, config)
 
 ## Init Misc Pins ##
 burnwire_heater_enable = initialize_pin(
@@ -125,9 +122,6 @@ burnwire1_fire = initialize_pin(
 )
 
 ## Init Hardware ##
-# TODO: Replace this with new radio_config rather than the flag
-use_fsk_flag = Flag(index=register.FLAG, bit_index=7)
-use_fsk_flag.toggle(False)
 
 try:
     radio = RFM9xManager(
@@ -147,17 +141,6 @@ imu = LSM6DSOXManager(logger, i2c1, 0x6B)
 
 cdh = CommandDataHandler(config, logger, radio)
 
-f = functions.functions(
-    c,
-    logger,
-    config,
-    sleep_helper,
-    radio,
-    magnetometer,
-    imu,
-    watchdog,
-    cdh,
-)
 try:
     sd = sdcardio.SDCard(spi1, board.SPI1_CS1)
     vfs = storage.VfsFat(sd)
@@ -291,6 +274,16 @@ time.sleep(0.1)  # Wait for the faces to power on
 mux_reset.value = True  # Reset the multiplexer
 
 tca = TCA9548A(i2c1, address=int(0x77))
+
+mcp0 = MCP9808(tca[0], address=27)
+veml0 = VEML7700(tca[0])
+
+xy_panel = XYSolarPanelManager(
+    logger=logger,
+    temperature_sensor=mcp0,
+    light_sensor=veml0,
+    load_switch_pin=FACE0_ENABLE,
+)
 
 
 ### This is Hacky V5a Devel Stuff###

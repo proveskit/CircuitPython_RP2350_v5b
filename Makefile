@@ -1,4 +1,4 @@
-PYSQUARED_VERSION ?= v2.0.0-alpha-25w24
+PYSQUARED_VERSION ?= mike-252-bring-back-big-data
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)
 
 .PHONY: all
