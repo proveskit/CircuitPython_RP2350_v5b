@@ -25,10 +25,10 @@ include = [
     "src/flight-software/repl.py",
     "src/flight-software/safemode.py",
     "src/flight-software/lib/proveskit_rp2040_v4/*",
-    "src/ground_station/boot.py",
-    "src/ground_station/main.py",
-    "src/ground_station/repl.py",
-    "src/ground_station/safemode.py",
+    "src/ground-station/boot.py",
+    "src/ground-station/main.py",
+    "src/ground-station/repl.py",
+    "src/ground-station/safemode.py",
 ]
 exclude = [
     "**/__pycache__",
