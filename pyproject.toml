@@ -1,16 +1,17 @@
 [project]
-name = "proveskit-rp2350-v5a"
+name = "proveskit-rp2350-v5b"
 version = "1.0.0"
-description = "Flight Software for the PROVES Kit RP2350 v5A"
+description = "Flight Software for the PROVES Kit RP2350 v5b"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = [
-    "adafruit-circuitpython-typing==1.11.2",
-    "circuitpython-stubs==9.2.5",
-    "coverage==7.6.10",
-    "pre-commit==4.0.1",
-    "pyright[nodejs]==1.1.399",
-    "pytest==8.3.2",
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "adafruit-circuitpython-typing==1.12.1",
+    "circuitpython-stubs==9.2.8",
+    "pre-commit==4.2.0",
+    "pyright[nodejs]==1.1.402",
 ]
 
 [tool.ruff.format]
@@ -18,13 +19,23 @@ dependencies = [
 line-ending = "lf"
 
 [tool.pyright]
-include = ["main.py", "boot.py", "repl.py", "safemode.py"]
+include = [
+    "src/flight-software/boot.py",
+    "src/flight-software/main.py",
+    "src/flight-software/repl.py",
+    "src/flight-software/safemode.py",
+    "src/flight-software/lib/proveskit_rp2040_v4/*",
+    "src/ground_station/boot.py",
+    "src/ground_station/main.py",
+    "src/ground_station/repl.py",
+    "src/ground_station/safemode.py",
+]
 exclude = [
     "**/__pycache__",
     ".venv",
     ".git",
     "artifacts",
-    "lib",
+    "src/*/lib",
     "typings",
 ]
 stubPath = "./typings"
