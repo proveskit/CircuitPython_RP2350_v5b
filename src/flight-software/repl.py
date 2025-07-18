@@ -24,6 +24,7 @@ from lib.adafruit_tca9548a import TCA9548A  ### This is Hacky V5a Devel Stuff###
 from lib.adafruit_veml7700 import VEML7700  ### This is Hacky V5a Devel Stuff###
 
 # from lib.pysquared.Big_Data import AllFaces  ### This is Hacky V5a Devel Stuff###
+from lib.proveskit_rp2350_v5b.register import Register
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
@@ -117,6 +118,7 @@ uhf_packet_manager = PacketManager(
     logger,
     uhf_radio,
     config.radio.license,
+    Counter(Register.message_count),
     0.2,
 )
 
