@@ -15,6 +15,8 @@ except Exception:
 
 import os
 
+from version import __version__
+
 from lib.adafruit_drv2605 import DRV2605  # This is Hacky V5a Devel Stuff###
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
@@ -31,6 +33,7 @@ from lib.pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
 from lib.pysquared.hardware.busio import _spi_init, initialize_i2c_bus
 from lib.pysquared.hardware.digitalio import initialize_pin
 from lib.pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
+from lib.pysquared.hardware.light_sensor.manager.veml7700 import VEML7700Manager
 from lib.pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from lib.pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
 from lib.pysquared.hardware.radio.manager.rfm9x import RFM9xManager
@@ -42,7 +45,6 @@ from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
-from version import __version__
 
 rtc = MicrocontrollerManager()
 
@@ -218,24 +220,24 @@ PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
 # Face Control Helper Functions
 def all_faces_off():
     """
-    This function turns off all of the faces. Note the load switches are disabled high.
-    """
-    FACE0_ENABLE.value = True
-    FACE1_ENABLE.value = True
-    FACE2_ENABLE.value = True
-    FACE3_ENABLE.value = True
-    FACE4_ENABLE.value = True
-
-
-def all_faces_on():
-    """
-    This function turns on all of the faces. Note the load switches are enabled low.
+    This function turns off all of the faces. Note the load switches are disabled low.
     """
     FACE0_ENABLE.value = False
     FACE1_ENABLE.value = False
     FACE2_ENABLE.value = False
     FACE3_ENABLE.value = False
     FACE4_ENABLE.value = False
+
+
+def all_faces_on():
+    """
+    This function turns on all of the faces. Note the load switches are enabled high.
+    """
+    FACE0_ENABLE.value = True
+    FACE1_ENABLE.value = True
+    FACE2_ENABLE.value = True
+    FACE3_ENABLE.value = True
+    FACE4_ENABLE.value = True
 
 
 ## Face Sensor Stuff ##
@@ -246,94 +248,11 @@ mux_reset.value = True
 tca = TCA9548A(i2c1, address=int(0x77))
 
 
-### This is Hacky V5a Devel Stuff###
-class Face:
-    def __init__(self, add: int, pos: str, tca: TCA9548A, logger: Logger) -> None:
-        self.tca: TCA9548A = tca
-        self.address: int = add
-        self.position: str = pos
-        self.logger: Logger = logger
-
-        # Define sensors based on position using a dictionary lookup instead of if-elif chain
-        sensor_map: dict[str, tuple[str, ...]] = {
-            "x+": ("MCP", "VEML", "DRV"),
-            "x-": ("MCP", "VEML"),
-            "y+": ("MCP", "VEML", "DRV"),
-            "y-": ("MCP", "VEML"),
-            "z-": ("MCP", "VEML", "DRV"),
-        }
-
-        # Use tuple instead of list for immutable data
-        self.senlist: tuple[str, ...] = sensor_map.get(pos, ())
-
-        # Initialize sensor states dict only with needed sensors
-        self.sensors: dict[str, bool] = {sensor: False for sensor in self.senlist}
-
-        # Initialize sensor objects as None
-        self.mcp: MCP9808 | None = None
-        self.veml: VEML7700 | None = None
-        self.drv: DRV2605 | None = None
-
-    def sensor_init(self, senlist, address) -> None:
-        if "MCP" in senlist:
-            try:
-                self.mcp = MCP9808(self.tca[address], address=27)
-                self.sensors["MCP"] = True
-            except Exception as e:
-                self.logger.error("Error Initializing Temperature Sensor", e)
-
-        if "VEML" in senlist:
-            try:
-                self.veml = VEML7700(self.tca[address])
-                self.sensors["VEML"] = True
-            except Exception as e:
-                self.logger.error("Error Initializing Light Sensor", e)
-
-        if "DRV" in senlist:
-            try:
-                self.drv = DRV2605(self.tca[address])
-                self.sensors["DRV"] = True
-            except Exception as e:
-                self.logger.error("Error Initializing Motor Driver", e)
-
-
-class AllFaces:
-    def __init__(self, tca: TCA9548A, logger: Logger) -> None:
-        self.tca: TCA9548A = tca
-        self.faces: list[Face] = []
-        self.logger: Logger = logger
-
-        # Create faces using a loop instead of individual variables
-        positions: list[tuple[str, int]] = [
-            ("y+", 0),
-            ("y-", 1),
-            ("x+", 2),
-            ("x-", 3),
-            ("z-", 4),
-        ]
-        for pos, addr in positions:
-            face: Face = Face(addr, pos, tca, self.logger)
-            face.sensor_init(face.senlist, face.address)
-            self.faces.append(face)
-
-    def face_test_all(self) -> list[list[float]]:
-        results: list[list[float]] = []
-        for face in self.faces:
-            if face:
-                try:
-                    temp: Union[float, None] = (
-                        face.mcp.temperature if face.sensors.get("MCP") else None  # type: ignore
-                    )
-                    light: Union[float, None] = (
-                        face.veml.lux if face.sensors.get("VEML") else None  # type: ignore
-                    )
-                    results.append([temp, light])  # type: ignore
-                except Exception:
-                    results.append([None, None])  # type: ignore
-        return results
-
-
-all_faces = AllFaces(tca, logger)
+light_sensor0 = VEML7700Manager(logger, tca[0])
+light_sensor1 = VEML7700Manager(logger, tca[1])
+light_sensor2= VEML7700Manager(logger, tca[2])
+light_sensor3 = VEML7700Manager(logger, tca[3])
+light_sensor4 = VEML7700Manager(logger, tca[4])
 
 ## Onboard Temp Sensor ##
 mcp1 = MCP9808(i2c1, address=30)  # Not working for some reason
