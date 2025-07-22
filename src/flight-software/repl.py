@@ -9,7 +9,7 @@ except ImportError:
     import board
 
 try:
-    from typing import Union
+    pass
 except Exception:
     pass
 
@@ -17,13 +17,11 @@ import os
 
 from version import __version__
 
-from lib.adafruit_drv2605 import DRV2605  # This is Hacky V5a Devel Stuff###
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
 )
 from lib.adafruit_mcp9808 import MCP9808  # This is Hacky V5a Devel Stuff###
 from lib.adafruit_tca9548a import TCA9548A  # This is Hacky V5a Devel Stuff###
-from lib.adafruit_veml7700 import VEML7700  # This is Hacky V5a Devel Stuff###
 
 # from lib.pysquared.Big_Data import AllFaces  ### This is Hacky V5a Devel Stuff###
 from lib.pysquared.beacon import Beacon
@@ -250,7 +248,7 @@ tca = TCA9548A(i2c1, address=int(0x77))
 
 light_sensor0 = VEML7700Manager(logger, tca[0])
 light_sensor1 = VEML7700Manager(logger, tca[1])
-light_sensor2= VEML7700Manager(logger, tca[2])
+light_sensor2 = VEML7700Manager(logger, tca[2])
 light_sensor3 = VEML7700Manager(logger, tca[3])
 light_sensor4 = VEML7700Manager(logger, tca[4])
 
