@@ -1,6 +1,7 @@
 import board
 import digitalio
 from busio import SPI
+
 from lib.proveskit_ground_station.proveskit_ground_station import GroundStation
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
