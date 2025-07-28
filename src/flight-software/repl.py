@@ -15,8 +15,6 @@ except Exception:
 
 import os
 
-from version import __version__
-
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
 )
@@ -43,6 +41,7 @@ from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
+from version import __version__
 
 rtc = MicrocontrollerManager()
 
