@@ -5,6 +5,8 @@ import time
 import board
 import digitalio
 import microcontroller
+from version import __version__
+
 from lib.proveskit_rp2350_v5b.register import Register
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
@@ -21,7 +23,6 @@ from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
-from version import __version__
 
 boot_time: float = time.time()
 
