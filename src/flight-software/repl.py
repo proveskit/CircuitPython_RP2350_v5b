@@ -15,6 +15,8 @@ except Exception:
 
 import os
 
+from version import __version__
+
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
 )
@@ -41,7 +43,6 @@ from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
-from version import __version__
 
 rtc = MicrocontrollerManager()
 
@@ -55,6 +56,13 @@ logger.info(
     hardware_version=os.uname().version,
     software_version=__version__,
 )
+
+
+def get_temp(sensor):
+    for i in range(1000):
+        print(sensor.get_temperature().value)
+        time.sleep(0.1)
+
 
 watchdog = Watchdog(logger, board.WDT_WDI)
 watchdog.pet()
@@ -249,13 +257,15 @@ light_sensor2 = VEML7700Manager(logger, tca[2])
 light_sensor3 = VEML7700Manager(logger, tca[3])
 light_sensor4 = VEML7700Manager(logger, tca[4])
 
+
 ## Onboard Temp Sensor ##
+temp_sensor5 = MCP9808Manager(logger, i2c0, addr=25)  # Antenna Board
+temp_sensor6 = MCP9808Manager(logger, i2c1, addr=27)  # Flight Controller Board
 temp_sensor0 = MCP9808Manager(logger, tca[0], addr=27)
 temp_sensor1 = MCP9808Manager(logger, tca[1], addr=27)
 temp_sensor2 = MCP9808Manager(logger, tca[2], addr=27)
 temp_sensor3 = MCP9808Manager(logger, tca[3], addr=27)
-temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
-
+# temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
 
 try:
     battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
