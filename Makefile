@@ -1,4 +1,4 @@
-PYSQUARED_VERSION ?= v2.0.0-alpha-25w31
+PYSQUARED_VERSION ?= v2.0.0-alpha-25w31git
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)
 BOARD_MOUNT_POINT ?= ""
 BOARD_TTY_PORT ?= ""
