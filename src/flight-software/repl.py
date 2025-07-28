@@ -20,7 +20,6 @@ from version import __version__
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
 )
-from lib.adafruit_mcp9808 import MCP9808  # This is Hacky V5a Devel Stuff###
 from lib.adafruit_tca9548a import TCA9548A  # This is Hacky V5a Devel Stuff###
 
 # from lib.pysquared.Big_Data import AllFaces  ### This is Hacky V5a Devel Stuff###
@@ -37,6 +36,7 @@ from lib.pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
 from lib.pysquared.hardware.radio.manager.rfm9x import RFM9xManager
 from lib.pysquared.hardware.radio.manager.sx1280 import SX1280Manager
 from lib.pysquared.hardware.radio.packetizer.packet_manager import PacketManager
+from lib.pysquared.hardware.temperature_sensor.manager.mcp9808 import MCP9808Manager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.protos.power_monitor import PowerMonitorProto
@@ -99,6 +99,13 @@ i2c1 = initialize_i2c_bus(
     100000,
 )
 
+i2c0 = initialize_i2c_bus(
+    logger,
+    board.SCL0,
+    board.SDA0,
+    100000,
+)
+
 sleep_helper = SleepHelper(logger, config, watchdog)
 
 uhf_radio = RFM9xManager(
@@ -135,15 +142,6 @@ beacon = Beacon(
 )
 
 
-## Initializing the Burn Wire ##
-ENABLE_BURN_A = initialize_pin(
-    logger, board.FIRE_DEPLOY1_A, digitalio.Direction.OUTPUT, True
-)
-ENABLE_BURN_B = initialize_pin(
-    logger, board.FIRE_DEPLOY1_B, digitalio.Direction.OUTPUT, True
-)
-
-
 def dumb_burn(duration=5) -> None:
     """
     This function is used to test the burn wire.
@@ -154,13 +152,13 @@ def dumb_burn(duration=5) -> None:
     Returns:
         None
     """
-    ENABLE_BURN_A.value = False
-    ENABLE_BURN_B.value = False
+    burnwire_heater_enable.value = False
+    burnwire1_fire.value = False
     logger.info("Burn Wire Enabled")
     time.sleep(duration)
     logger.info("Burn Wire Disabled")
-    ENABLE_BURN_A.value = True
-    ENABLE_BURN_B.value = True
+    burnwire_heater_enable.value = True
+    burnwire1_fire.value = True
 
 
 ## Initializing the Heater ##
@@ -220,11 +218,11 @@ def all_faces_off():
     """
     This function turns off all of the faces. Note the load switches are disabled low.
     """
-    FACE0_ENABLE.value = True
-    FACE1_ENABLE.value = True
-    FACE2_ENABLE.value = True
-    FACE3_ENABLE.value = True
-    FACE4_ENABLE.value = True
+    FACE0_ENABLE.value = False
+    FACE1_ENABLE.value = False
+    FACE2_ENABLE.value = False
+    FACE3_ENABLE.value = False
+    FACE4_ENABLE.value = False
 
 
 def all_faces_on():
@@ -253,7 +251,12 @@ light_sensor3 = VEML7700Manager(logger, tca[3])
 light_sensor4 = VEML7700Manager(logger, tca[4])
 
 ## Onboard Temp Sensor ##
-mcp1 = MCP9808(i2c1, address=30)  # Not working for some reason
+temp_sensor0 = MCP9808Manager(logger, tca[0], addr=27)
+temp_sensor1 = MCP9808Manager(logger, tca[1], addr=27)
+temp_sensor2 = MCP9808Manager(logger, tca[2], addr=27)
+temp_sensor3 = MCP9808Manager(logger, tca[3], addr=27)
+temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
+
 
 try:
     battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
@@ -273,10 +276,3 @@ burnwire1_fire = initialize_pin(
 antenna_deployment = BurnwireManager(
     logger, burnwire_heater_enable, burnwire1_fire, enable_logic=True
 )
-
-
-## Initialize the MCP23017 GPIO Expander and its pins ##
-GPIO_RESET = initialize_pin(
-    logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True
-)
-mcp2 = MCP23017(i2c1)
