@@ -1,20 +1,8 @@
+import os
 import time
 
+import board
 import digitalio
-
-try:
-    # from board_definitions import proveskit_rp2040_v4 as board
-    raise ImportError
-except ImportError:
-    import board
-
-try:
-    pass
-except Exception:
-    pass
-
-import os
-
 from lib.adafruit_mcp230xx.mcp23017 import (
     MCP23017,  # This is Hacky V5a Devel Stuff###
 )
@@ -52,7 +40,7 @@ logger: Logger = Logger(
 
 logger.info(
     "Booting",
-    hardware_version=os.uname().version,
+    hardware_version=os.uname().version,  # type: ignore[attr-defined]
     software_version=__version__,
 )
 
@@ -147,44 +135,6 @@ beacon = Beacon(
     sband_radio,
 )
 
-
-def dumb_burn(duration=5) -> None:
-    """
-    This function is used to test the burn wire.
-    It will turn on the burn wire for 5 seconds and then turn it off.
-
-    Args:
-        duration (int): The duration to burn for in seconds. Default is 5 seconds.
-    Returns:
-        None
-    """
-    burnwire_heater_enable.value = False
-    burnwire1_fire.value = False
-    logger.info("Burn Wire Enabled")
-    time.sleep(duration)
-    logger.info("Burn Wire Disabled")
-    burnwire_heater_enable.value = True
-    burnwire1_fire.value = True
-
-
-## Initializing the Heater ##
-def heater_pulse() -> None:
-    """
-    This function is used to turn on the heater.
-    It will turn on the heater for 5 seconds and then turn it off.
-
-    Args:
-        None
-    Returns:
-        None
-    """
-    ENABLE_HEATER.value = False
-    logger.info("Heater Enabled")
-    time.sleep(5)
-    logger.info("Heater Disabled")
-    ENABLE_HEATER.value = True
-
-
 ## Initialize the MCP23017 GPIO Expander and its pins ##
 GPIO_RESET = initialize_pin(
     logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True
@@ -264,13 +214,12 @@ temp_sensor0 = MCP9808Manager(logger, tca[0], addr=27)
 temp_sensor1 = MCP9808Manager(logger, tca[1], addr=27)
 temp_sensor2 = MCP9808Manager(logger, tca[2], addr=27)
 temp_sensor3 = MCP9808Manager(logger, tca[3], addr=27)
-# temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
+temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
 
-try:
-    battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
-    solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x44)
-except Exception as e:
-    logger.error("Error Initializing Power Monitors", e)
+
+battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
+solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x44)
+
 
 ## Init Misc Pins ##
 burnwire_heater_enable = initialize_pin(

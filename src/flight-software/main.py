@@ -37,7 +37,7 @@ logger: Logger = Logger(
 
 logger.info(
     "Booting",
-    hardware_version=os.uname().version,
+    hardware_version=os.uname().version,  # type: ignore[attr-defined]
     software_version=__version__,
 )
 
