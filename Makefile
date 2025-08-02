@@ -80,13 +80,11 @@ clean: ## Remove all gitignored files such as downloaded libraries and artifacts
 build: build-flight-software build-ground-station ## Build all projects
 
 .PHONY: build-*
-build-%: download-libraries-% mpy-cross ## Build the project, store the result in the artifacts directory
+build-%: download-libraries-% ## Build the project, store the result in the artifacts directory
 	@echo "Creating artifacts/proves/$*"
 	@mkdir -p artifacts/proves/$*
 	@echo "__version__ = '$(VERSION)'" > artifacts/proves/$*/version.py
-	$(call compile_mpy,$*)
 	$(call rsync_to_dest,src/$*,artifacts/proves/$*/)
-	@$(UV) run python -c "import os; [os.remove(os.path.join(root, file)) for root, _, files in os.walk('artifacts/proves/$*/lib') for file in files if file.endswith('.py')]"
 	@echo "Creating artifacts/proves/$*.zip"
 	@zip -r artifacts/proves/$*.zip artifacts/proves/$* > /dev/null
 
