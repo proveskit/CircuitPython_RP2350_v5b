@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Literal, cast
 
 import board
 import digitalio
@@ -204,7 +205,7 @@ tca = TCA9548A(i2c1, address=int(0x77))
 light_sensors = []
 for i in range(5):
     try:
-        sensor = VEML7700Manager(logger, tca[i])
+        sensor = VEML7700Manager(logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)])
         light_sensors.append(sensor)
     except Exception:
         logger.debug(f"WARNING!!! Light sensor {i} failed to initialize")
@@ -231,10 +232,12 @@ temp_sensors.append(temp_sensor6)
 # TCA-connected temp sensors
 for i in range(5):
     try:
-        sensor = MCP9808Manager(logger, tca[i], addr=27)
+        sensor = MCP9808Manager(
+            logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)], addr=27
+        )
         temp_sensors.append(sensor)
     except Exception:
-        logger.error(f"WARNING!!! Temp sensor {i} (TCA[{i}]) failed")
+        logger.debug(f"WARNING!!! Temp sensor {i} (TCA[{i}]) failed")
         temp_sensors.append(None)
 
 
