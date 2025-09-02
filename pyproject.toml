@@ -37,6 +37,8 @@ exclude = [
     "artifacts",
     "src/*/lib",
     "typings",
+    "typeshed",
 ]
 stubPath = "./typings"
+typeshedPath = "./typeshed"
 reportMissingModuleSource = false
