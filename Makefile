@@ -50,7 +50,7 @@ fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
 .PHONY: typecheck
-typecheck: .venv typeshed ## Run type check
+typecheck: .venv download-libraries typeshed ## Run type check
 	@$(UV) run -m pyright .
 
 .PHONY: install
