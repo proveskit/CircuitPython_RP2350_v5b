@@ -1,11 +1,11 @@
-PYSQUARED_VERSION ?= v2.0.0-alpha-25w31
+PYSQUARED_VERSION ?= v2.0.0-alpha-25w34
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)
 BOARD_MOUNT_POINT ?= ""
 BOARD_TTY_PORT ?= ""
 VERSION ?= $(shell git tag --points-at HEAD --sort=-creatordate < /dev/null | head -n 1)
 
 .PHONY: all
-all: .venv download-libraries pre-commit-install help
+all: .venv typeshed download-libraries pre-commit-install help
 
 .PHONY: help
 help: ## Display this help.
@@ -18,6 +18,11 @@ help: ## Display this help.
 	@$(MAKE) uv
 	@$(UV) venv
 	@$(UV) sync
+
+typeshed: ## Install CircuitPython typeshed stubs
+	@echo "Installing CircuitPython typeshed stubs..."
+	@$(MAKE) uv
+	@$(UV) pip install circuitpython-typeshed==0.1.0 --target typeshed
 
 .PHONY: download-libraries
 download-libraries: download-libraries-flight-software download-libraries-ground-station
@@ -44,7 +49,8 @@ sync-time: uv ## Syncs the time from your computer to the PROVES Kit board
 fmt: pre-commit-install ## Lint and format files
 	$(UVX) pre-commit run --all-files
 
-typecheck: .venv download-libraries ## Run type check
+.PHONY: typecheck
+typecheck: .venv download-libraries typeshed ## Run type check
 	@$(UV) run -m pyright .
 
 .PHONY: install

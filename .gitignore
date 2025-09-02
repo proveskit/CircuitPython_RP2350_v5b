@@ -9,6 +9,7 @@ coverage-reports/
 tools/
 venv
 **/*.mpy
+typeshed/
 
 # libs
 src/*/lib/*
