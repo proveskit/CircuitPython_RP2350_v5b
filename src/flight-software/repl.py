@@ -1,6 +1,5 @@
 import os
 import time
-from typing import Literal, cast
 
 import board
 import digitalio
