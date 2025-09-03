@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Literal, cast
 
 import board
 import digitalio
@@ -232,6 +233,7 @@ try:
 except Exception:
     logger.debug("WARNING!!! Light sensor 4 failed to initialize")
     light_sensors.append(None)
+
 
 # Onboard Temp Sensors
 temp_sensors = []
