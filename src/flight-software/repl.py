@@ -1,5 +1,6 @@
 import os
 import time
+from typing import Literal, cast
 
 import board
 import digitalio
@@ -200,26 +201,48 @@ mux_reset.value = True
 tca = TCA9548A(i2c1, address=int(0x77))
 
 
-light_sensor0 = VEML7700Manager(logger, tca[0])
-light_sensor1 = VEML7700Manager(logger, tca[1])
-light_sensor2 = VEML7700Manager(logger, tca[2])
-light_sensor3 = VEML7700Manager(logger, tca[3])
-light_sensor4 = VEML7700Manager(logger, tca[4])
+# Light Sensors
+light_sensors = []
+for i in range(5):
+    try:
+        sensor = VEML7700Manager(logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)])
+        light_sensors.append(sensor)
+    except Exception:
+        logger.debug(f"WARNING!!! Light sensor {i} failed to initialize")
+        light_sensors.append(None)
 
+# Onboard Temp Sensors
+temp_sensors = []
 
-## Onboard Temp Sensor ##
-temp_sensor5 = MCP9808Manager(logger, i2c0, addr=25)  # Antenna Board
-temp_sensor6 = MCP9808Manager(logger, i2c1, addr=27)  # Flight Controller Board
-temp_sensor0 = MCP9808Manager(logger, tca[0], addr=27)
-temp_sensor1 = MCP9808Manager(logger, tca[1], addr=27)
-temp_sensor2 = MCP9808Manager(logger, tca[2], addr=27)
-temp_sensor3 = MCP9808Manager(logger, tca[3], addr=27)
-temp_sensor4 = MCP9808Manager(logger, tca[4], addr=27)
+# Direct I2C sensors
+try:
+    temp_sensor5 = MCP9808Manager(logger, i2c0, addr=25)  # Antenna Board
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 5 (Antenna Board) failed")
+    temp_sensor5 = None
+temp_sensors.append(temp_sensor5)
+
+try:
+    temp_sensor6 = MCP9808Manager(logger, i2c1, addr=27)  # Flight Controller Board
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 6 (Flight Controller Board) failed")
+    temp_sensor6 = None
+temp_sensors.append(temp_sensor6)
+
+# TCA-connected temp sensors
+for i in range(5):
+    try:
+        sensor = MCP9808Manager(
+            logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)], addr=27
+        )
+        temp_sensors.append(sensor)
+    except Exception:
+        logger.debug(f"WARNING!!! Temp sensor {i} (TCA[{i}]) failed")
+        temp_sensors.append(None)
 
 
 battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
 solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x44)
-
 
 ## Init Misc Pins ##
 burnwire_heater_enable = initialize_pin(
