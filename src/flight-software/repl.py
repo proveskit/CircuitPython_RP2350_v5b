@@ -1,6 +1,5 @@
 import os
 import time
-from typing import Literal, cast
 
 import board
 import digitalio
@@ -203,13 +202,37 @@ tca = TCA9548A(i2c1, address=int(0x77))
 
 # Light Sensors
 light_sensors = []
-for i in range(5):
-    try:
-        sensor = VEML7700Manager(logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)])
-        light_sensors.append(sensor)
-    except Exception:
-        logger.debug(f"WARNING!!! Light sensor {i} failed to initialize")
-        light_sensors.append(None)
+try:
+    sensor = VEML7700Manager(logger, tca[0])
+    light_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Light sensor 0 failed to initialize")
+    light_sensors.append(None)
+try:
+    sensor = VEML7700Manager(logger, tca[1])
+    light_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Light sensor 1 failed to initialize")
+    light_sensors.append(None)
+try:
+    sensor = VEML7700Manager(logger, tca[2])
+    light_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Light sensor 2 failed to initialize")
+    light_sensors.append(None)
+try:
+    sensor = VEML7700Manager(logger, tca[3])
+    light_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Light sensor 3 failed to initialize")
+    light_sensors.append(None)
+try:
+    sensor = VEML7700Manager(logger, tca[4])
+    light_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Light sensor 4 failed to initialize")
+    light_sensors.append(None)
+
 
 # Onboard Temp Sensors
 temp_sensors = []
@@ -230,16 +253,36 @@ except Exception:
 temp_sensors.append(temp_sensor6)
 
 # TCA-connected temp sensors
-for i in range(5):
-    try:
-        sensor = MCP9808Manager(
-            logger, tca[cast(Literal[0, 1, 2, 3, 4, 5, 6, 7], i)], addr=27
-        )
-        temp_sensors.append(sensor)
-    except Exception:
-        logger.debug(f"WARNING!!! Temp sensor {i} (TCA[{i}]) failed")
-        temp_sensors.append(None)
-
+try:
+    sensor = MCP9808Manager(logger, tca[0], addr=27)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor (TCA[0]) failed")
+    temp_sensors.append(None)
+try:
+    sensor = MCP9808Manager(logger, tca[1], addr=27)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 1]) failed")
+    temp_sensors.append(None)
+try:
+    sensor = MCP9808Manager(logger, tca[2], addr=27)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 2 failed")
+    temp_sensors.append(None)
+try:
+    sensor = MCP9808Manager(logger, tca[3], addr=27)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor3 failed")
+    temp_sensors.append(None)
+try:
+    sensor = MCP9808Manager(logger, tca[4], addr=27)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 4 failed")
+    temp_sensors.append(None)
 
 battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
 solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x44)
