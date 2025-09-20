@@ -47,6 +47,44 @@ for i in range(loiter_time):
     time.sleep(1)
 
 try:
+
+    initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+
+
+    # This sets up all of the GPIO pins on the MCP23017
+    #GPB
+    FACE4_ENABLE = mcp.get_pin(8)
+    FACE0_ENABLE = mcp.get_pin(9)
+    FACE1_ENABLE = mcp.get_pin(10)
+    FACE2_ENABLE = mcp.get_pin(11)
+    FACE3_ENABLE = mcp.get_pin(12)
+    FACE5_ENABLE = mcp.get_pin(13)
+    #READ ONLY
+    #CHARGE
+    
+    # GPA
+    ENABLE_HEATER = mcp.get_pin(0)
+    PAYLOAD_PWR_ENABLE = mcp.get_pin(1)
+    FIRE_DEPLOY2_B = mcp.get_pin(2)
+    PAYLOAD_BATT_ENABLE = mcp.get_pin(3)
+    RF2_IO2 = mcp.get_pin(4)
+    RF2_IO1 = mcp.get_pin(5)
+    RF2_IO0 = mcp.get_pin(6)
+    RF2_IO3 = mcp.get_pin(7)
+
+    # This defines the direction of the GPIO pins
+    FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
+    FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
+    FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
+    FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
+    FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
+    ENAB_RF.direction = digitalio.Direction.OUTPUT
+    VBUS_RESET.direction = digitalio.Direction.OUTPUT
+    ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
+    PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
+
+
+
     watchdog = Watchdog(logger, board.WDT_WDI)
     watchdog.pet()
 

@@ -27,7 +27,7 @@ from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
-from lib.pysquared.sleep_helper import SleepHelper
+#from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
 from version import __version__
 
@@ -50,6 +50,67 @@ def get_temp(sensor):
         print(sensor.get_temperature().value)
         time.sleep(0.1)
 
+initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+
+watchdog = Watchdog(logger, board.WDT_WDI)
+watchdog.pet()
+
+logger.debug("Initializing Config")
+config: Config = Config("config.json")
+
+mux_reset = initialize_pin(
+    logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False
+)
+
+
+i2c1 = initialize_i2c_bus(
+    logger,
+    board.I2C1_SCL,
+    board.I2C1_SDA,
+    100000,
+)
+
+i2c0 = initialize_i2c_bus(
+    logger,
+    board.I2C0_SCL,
+    board.I2C0_SDA,
+    100000,
+)
+
+
+mcp = MCP23017(i2c1)
+
+
+#GPB
+FACE4_ENABLE = mcp.get_pin(8)
+FACE0_ENABLE = mcp.get_pin(9)
+FACE1_ENABLE = mcp.get_pin(10)
+FACE2_ENABLE = mcp.get_pin(11)
+FACE3_ENABLE = mcp.get_pin(12)
+FACE5_ENABLE = mcp.get_pin(13)
+#READ ONLY
+#CHARGE
+    
+# GPA
+ENABLE_HEATER = mcp.get_pin(0)
+PAYLOAD_PWR_ENABLE = mcp.get_pin(1)
+FIRE_DEPLOY2_B = mcp.get_pin(2)
+PAYLOAD_BATT_ENABLE = mcp.get_pin(3)
+RF2_IO2 = mcp.get_pin(4)
+RF2_IO1 = mcp.get_pin(5)
+RF2_IO0 = mcp.get_pin(6)
+RF2_IO3 = mcp.get_pin(7)
+
+# This defines the direction of the GPIO pins
+FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
+FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
+FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
+FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
+FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
+ENAB_RF.direction = digitalio.Direction.OUTPUT
+VBUS_RESET.direction = digitalio.Direction.OUTPUT
+ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
+PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
 
 watchdog = Watchdog(logger, board.WDT_WDI)
 watchdog.pet()
@@ -86,19 +147,7 @@ sband_radio = SX1280Manager(
     initialize_pin(logger, board.RF2_RX_EN, digitalio.Direction.OUTPUT, False),
 )
 
-i2c1 = initialize_i2c_bus(
-    logger,
-    board.SCL1,
-    board.SDA1,
-    100000,
-)
 
-i2c0 = initialize_i2c_bus(
-    logger,
-    board.SCL0,
-    board.SDA0,
-    100000,
-)
 
 sleep_helper = SleepHelper(logger, config, watchdog)
 
@@ -139,34 +188,9 @@ beacon = Beacon(
 GPIO_RESET = initialize_pin(
     logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True
 )
-mcp = MCP23017(i2c1)
 
-# This sets up all of the GPIO pins on the MCP23017
-FACE4_ENABLE = mcp.get_pin(8)
-FACE0_ENABLE = mcp.get_pin(9)
-FACE1_ENABLE = mcp.get_pin(10)
-FACE2_ENABLE = mcp.get_pin(11)
-FACE3_ENABLE = mcp.get_pin(12)
-ENAB_RF = mcp.get_pin(13)
-VBUS_RESET = mcp.get_pin(14)
-SPI0_CS1 = mcp.get_pin(15)
-ENABLE_HEATER = mcp.get_pin(0)
-PAYLOAD_PWR_ENABLE = mcp.get_pin(1)
-Z_GPIO0 = mcp.get_pin(2)
-Z_GPIO1 = mcp.get_pin(3)
-RF2_IO2 = mcp.get_pin(4)
-RF2_IO1 = mcp.get_pin(5)
 
-# This defines the direction of the GPIO pins
-FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
-FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
-FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
-FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
-FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
-ENAB_RF.direction = digitalio.Direction.OUTPUT
-VBUS_RESET.direction = digitalio.Direction.OUTPUT
-ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
-PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
+
 
 
 # Face Control Helper Functions
