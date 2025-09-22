@@ -44,23 +44,25 @@ logger.info(
     software_version=__version__,
 )
 
-
-def get_temp(sensor):
-    for i in range(1000):
-        print(sensor.get_temperature().value)
-        time.sleep(0.1)
-
-initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
-
 watchdog = Watchdog(logger, board.WDT_WDI)
 watchdog.pet()
 
 logger.debug("Initializing Config")
 config: Config = Config("config.json")
 
-mux_reset = initialize_pin(
-    logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False
-)
+def get_temp(sensor):
+    for i in range(1000):
+        print(sensor.get_temperature().value)
+        time.sleep(0.1)
+
+SPI0_CS0 = initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True)
+SPI1_CS0 = initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True)
+
+
+
+#manually set the pin high to allow mcp to be detected
+GPIO_RESET = initialize_pin(logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True),
+
 
 
 i2c1 = initialize_i2c_bus(
@@ -78,10 +80,10 @@ i2c0 = initialize_i2c_bus(
 )
 
 
-mcp = MCP23017(i2c1)
+mcp = MCP23017(i2c1) # x1e or x52 or 0x6b
 
 
-#GPB
+# #GPB
 FACE4_ENABLE = mcp.get_pin(8)
 FACE0_ENABLE = mcp.get_pin(9)
 FACE1_ENABLE = mcp.get_pin(10)
@@ -101,26 +103,18 @@ RF2_IO1 = mcp.get_pin(5)
 RF2_IO0 = mcp.get_pin(6)
 RF2_IO3 = mcp.get_pin(7)
 
-# This defines the direction of the GPIO pins
+# # This defines the direction of the GPIO pins
 FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
-ENAB_RF.direction = digitalio.Direction.OUTPUT
-VBUS_RESET.direction = digitalio.Direction.OUTPUT
 ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
 PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
 
-watchdog = Watchdog(logger, board.WDT_WDI)
-watchdog.pet()
 
-logger.debug("Initializing Config")
-config: Config = Config("config.json")
 
-mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False)
-
-# TODO(nateinaction): fix spi init
+# # TODO(nateinaction): fix spi init
 spi0 = _spi_init(
     logger,
     board.SPI0_SCK,
@@ -139,23 +133,22 @@ sband_radio = SX1280Manager(
     logger,
     config.radio,
     spi1,
-    initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True),
+    SPI1_CS0,
     initialize_pin(logger, board.RF2_RST, digitalio.Direction.OUTPUT, True),
-    initialize_pin(logger, board.RF2_IO0, digitalio.Direction.OUTPUT, True),
+    RF2_IO0,
     2.4,
     initialize_pin(logger, board.RF2_TX_EN, digitalio.Direction.OUTPUT, False),
     initialize_pin(logger, board.RF2_RX_EN, digitalio.Direction.OUTPUT, False),
 )
 
 
-
-sleep_helper = SleepHelper(logger, config, watchdog)
+#sleep_helper = SleepHelper(logger, config, watchdog)
 
 uhf_radio = RFM9xManager(
     logger,
     config.radio,
     spi0,
-    initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+    SPI0_CS0,
     initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
 )
 
@@ -183,13 +176,6 @@ beacon = Beacon(
     uhf_radio,
     sband_radio,
 )
-
-## Initialize the MCP23017 GPIO Expander and its pins ##
-GPIO_RESET = initialize_pin(
-    logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True
-)
-
-
 
 
 
@@ -219,12 +205,15 @@ def all_faces_on():
 ## Face Sensor Stuff ##
 
 # This is the TCA9548A I2C Multiplexer
+
+mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False)
 all_faces_on()
+time.sleep(0.1)
 mux_reset.value = True
-tca = TCA9548A(i2c1, address=int(0x77))
+tca = TCA9548A(i2c0, address=int(0x77)) #all 3 connected to high
 
 
-# Light Sensors
+# # Light Sensors
 light_sensors = []
 try:
     sensor = VEML7700Manager(logger, tca[0])
@@ -251,7 +240,7 @@ except Exception:
     logger.debug("WARNING!!! Light sensor 3 failed to initialize")
     light_sensors.append(None)
 try:
-    sensor = VEML7700Manager(logger, tca[4])
+    sensor = VEML7700Manager(logger, tca[5])
     light_sensors.append(sensor)
 except Exception:
     logger.debug("WARNING!!! Light sensor 4 failed to initialize")
@@ -261,20 +250,20 @@ except Exception:
 # Onboard Temp Sensors
 temp_sensors = []
 
-# Direct I2C sensors
-try:
-    temp_sensor5 = MCP9808Manager(logger, i2c0, addr=25)  # Antenna Board
-except Exception:
-    logger.debug("WARNING!!! Temp sensor 5 (Antenna Board) failed")
-    temp_sensor5 = None
-temp_sensors.append(temp_sensor5)
+# # Direct I2C sensors
+# try:
+#     temp_sensor5 = MCP9808Manager(logger, i2c0, addr=40)  # Antenna Board
+# except Exception:
+#     logger.debug("WARNING!!! Temp sensor (Antenna Board) failed")
+#     temp_sensor5 = None
+# temp_sensors.append(temp_sensor5)
 
-try:
-    temp_sensor6 = MCP9808Manager(logger, i2c1, addr=27)  # Flight Controller Board
-except Exception:
-    logger.debug("WARNING!!! Temp sensor 6 (Flight Controller Board) failed")
-    temp_sensor6 = None
-temp_sensors.append(temp_sensor6)
+# try:
+#     temp_sensor6 = MCP9808Manager(logger, i2c1, addr=41)  # Flight Controller Board
+# except Exception:
+#     logger.debug("WARNING!!! Temp sensor  (Flight Controller Board) failed")
+#     temp_sensor6 = None
+# temp_sensors.append(temp_sensor6)
 
 # TCA-connected temp sensors
 try:
@@ -287,7 +276,7 @@ try:
     sensor = MCP9808Manager(logger, tca[1], addr=27)
     temp_sensors.append(sensor)
 except Exception:
-    logger.debug("WARNING!!! Temp sensor 1]) failed")
+    logger.debug("WARNING!!! Temp sensor 1 failed")
     temp_sensors.append(None)
 try:
     sensor = MCP9808Manager(logger, tca[2], addr=27)
@@ -299,17 +288,31 @@ try:
     sensor = MCP9808Manager(logger, tca[3], addr=27)
     temp_sensors.append(sensor)
 except Exception:
-    logger.debug("WARNING!!! Temp sensor3 failed")
+    logger.debug("WARNING!!! Temp sensor 3 failed")
     temp_sensors.append(None)
 try:
-    sensor = MCP9808Manager(logger, tca[4], addr=27)
+    sensor = MCP9808Manager(logger, tca[5], addr=24)
     temp_sensors.append(sensor)
 except Exception:
-    logger.debug("WARNING!!! Temp sensor 4 failed")
+    logger.debug("WARNING!!! Temp sensor 4 failed (Z- Face Bottom pins")
     temp_sensors.append(None)
 
-battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x40)
-solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c1, 0x44)
+#these are the bottom 6 pins on the z- face connection, uncomment if that is where you plug in a face for the z- board
+# try:
+#     sensor = MCP9808Manager(logger, tca[6], addr=24)
+#     temp_sensors.append(sensor)
+# except Exception:
+#     logger.debug("WARNING!!! Temp sensor 4 failed (Z- Face Top pins)")
+# #     temp_sensors.append(None)
+try:
+    sensor = MCP9808Manager(logger, tca[7], addr=25)
+    temp_sensors.append(sensor)
+except Exception:
+    logger.debug("WARNING!!! Temp sensor 5 failed (Antenna Board)")
+    temp_sensors.append(None)
+
+battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x40)
+solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x41)
 
 ## Init Misc Pins ##
 burnwire_heater_enable = initialize_pin(
