@@ -3,12 +3,9 @@ import time
 
 import board
 import digitalio
-from lib.adafruit_mcp230xx.mcp23017 import (
-    MCP23017,  # This is Hacky V5a Devel Stuff###
-)
-from lib.adafruit_tca9548a import TCA9548A  # This is Hacky V5a Devel Stuff###
+from lib.adafruit_mcp230xx.mcp23017 import MCP23017
+from lib.adafruit_tca9548a import TCA9548A  
 
-# from lib.pysquared.Big_Data import AllFaces  ### This is Hacky V5a Devel Stuff###
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
@@ -58,12 +55,8 @@ def get_temp(sensor):
 SPI0_CS0 = initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True)
 SPI1_CS0 = initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True)
 
-
-
 #manually set the pin high to allow mcp to be detected
 GPIO_RESET = initialize_pin(logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True),
-
-
 
 i2c1 = initialize_i2c_bus(
     logger,
@@ -80,7 +73,7 @@ i2c0 = initialize_i2c_bus(
 )
 
 
-mcp = MCP23017(i2c1) # x1e or x52 or 0x6b
+mcp = MCP23017(i2c1) 
 
 
 # #GPB
@@ -296,7 +289,6 @@ try:
 except Exception:
     logger.debug("WARNING!!! Temp sensor 4 failed (Z- Face Bottom pins")
     temp_sensors.append(None)
-
 #these are the bottom 6 pins on the z- face connection, uncomment if that is where you plug in a face for the z- board
 # try:
 #     sensor = MCP9808Manager(logger, tca[6], addr=24)
@@ -314,7 +306,6 @@ except Exception:
 battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x40)
 solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x41)
 
-## Init Misc Pins ##
 burnwire_heater_enable = initialize_pin(
     logger, board.FIRE_DEPLOY1_A, digitalio.Direction.OUTPUT, False
 )

@@ -19,8 +19,14 @@ from lib.pysquared.hardware.radio.packetizer.packet_manager import PacketManager
 from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
-from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
+from lib.adafruit_mcp230xx.mcp23017 import MCP23017
+from lib.pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
+
+
+from lib.adafruit_tca9548a import TCA9548A  
+
+
 from version import __version__
 
 boot_time: float = time.time()
@@ -41,6 +47,9 @@ logger.info(
     software_version=__version__,
 )
 
+logger.debug("Initializing Config")
+config: Config = Config("config.json")
+
 loiter_time: int = 5
 for i in range(loiter_time):
     logger.info(f"Code Starting in {loiter_time-i} seconds")
@@ -48,10 +57,27 @@ for i in range(loiter_time):
 
 try:
 
-    initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
+    SPI0_CS0 = initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True)
+    SPI1_CS0 = initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True)
+    GPIO_RESET = initialize_pin(logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True)
+
+    i2c1 = initialize_i2c_bus(
+    logger,
+    board.I2C1_SCL,
+    board.I2C1_SDA,
+    100000,
+    )
+
+    i2c0 = initialize_i2c_bus(
+        logger,
+        board.I2C0_SCL,
+        board.I2C0_SDA,
+        100000,
+    )
 
 
-    # This sets up all of the GPIO pins on the MCP23017
+    mcp = MCP23017(i2c1) 
+
     #GPB
     FACE4_ENABLE = mcp.get_pin(8)
     FACE0_ENABLE = mcp.get_pin(9)
@@ -59,9 +85,7 @@ try:
     FACE2_ENABLE = mcp.get_pin(11)
     FACE3_ENABLE = mcp.get_pin(12)
     FACE5_ENABLE = mcp.get_pin(13)
-    #READ ONLY
-    #CHARGE
-    
+
     # GPA
     ENABLE_HEATER = mcp.get_pin(0)
     PAYLOAD_PWR_ENABLE = mcp.get_pin(1)
@@ -72,30 +96,6 @@ try:
     RF2_IO0 = mcp.get_pin(6)
     RF2_IO3 = mcp.get_pin(7)
 
-    # This defines the direction of the GPIO pins
-    FACE4_ENABLE.direction = digitalio.Direction.OUTPUT
-    FACE0_ENABLE.direction = digitalio.Direction.OUTPUT
-    FACE1_ENABLE.direction = digitalio.Direction.OUTPUT
-    FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
-    FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
-    ENAB_RF.direction = digitalio.Direction.OUTPUT
-    VBUS_RESET.direction = digitalio.Direction.OUTPUT
-    ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
-    PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
-
-
-
-    watchdog = Watchdog(logger, board.WDT_WDI)
-    watchdog.pet()
-
-    logger.debug("Initializing Config")
-    config: Config = Config("config.json")
-
-    mux_reset = initialize_pin(
-        logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False
-    )
-
-    # TODO(nateinaction): fix spi init
     spi0 = _spi_init(
         logger,
         board.SPI0_SCK,
@@ -110,33 +110,26 @@ try:
         board.SPI1_MISO,
     )
 
+
     sband_radio = SX1280Manager(
         logger,
         config.radio,
         spi1,
-        initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True),
+        SPI1_CS0,
         initialize_pin(logger, board.RF2_RST, digitalio.Direction.OUTPUT, True),
-        initialize_pin(logger, board.RF2_IO0, digitalio.Direction.OUTPUT, True),
+        RF2_IO0,
         2.4,
         initialize_pin(logger, board.RF2_TX_EN, digitalio.Direction.OUTPUT, False),
         initialize_pin(logger, board.RF2_RX_EN, digitalio.Direction.OUTPUT, False),
     )
 
-    i2c1 = initialize_i2c_bus(
-        logger,
-        board.SCL1,
-        board.SDA1,
-        100000,
-    )
-
-    sleep_helper = SleepHelper(logger, config, watchdog)
 
     uhf_radio = RFM9xManager(
-        logger,
-        config.radio,
-        spi0,
-        initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True),
-        initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
+    logger,
+    config.radio,
+    spi0,
+    SPI0_CS0,
+    initialize_pin(logger, board.RF1_RST, digitalio.Direction.OUTPUT, True),
     )
 
     magnetometer = LIS2MDLManager(logger, i2c1)
@@ -147,7 +140,7 @@ try:
         logger,
         uhf_radio,
         config.radio.license,
-        Counter(Register.message_count),
+        Counter(2),
         0.2,
     )
 
@@ -157,20 +150,53 @@ try:
         logger,
         config.cubesat_name,
         uhf_packet_manager,
-        boot_time,
+        time.monotonic(),
         imu,
         magnetometer,
         uhf_radio,
         sband_radio,
-        error_count,
-        boot_count,
     )
+
+
+    # Face Control Helper Functions
+    def all_faces_off():
+        """
+        This function turns off all of the faces. Note the load switches are disabled low.
+        """
+        FACE0_ENABLE.value = False
+        FACE1_ENABLE.value = False
+        FACE2_ENABLE.value = False
+        FACE3_ENABLE.value = False
+        FACE4_ENABLE.value = False
+
+
+    def all_faces_on():
+        """
+        This function turns on all of the faces. Note the load switches are enabled high.
+        """
+        FACE0_ENABLE.value = True
+        FACE1_ENABLE.value = True
+        FACE2_ENABLE.value = True
+        FACE3_ENABLE.value = True
+        FACE4_ENABLE.value = True
+
+    mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False)
+    all_faces_on()
+    time.sleep(0.1)
+    mux_reset.value = True
+    tca = TCA9548A(i2c0, address=int(0x77)) #all 3 connected to high
+
+    battery_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x40)
+    solar_power_monitor: PowerMonitorProto = INA219Manager(logger, i2c0, 0x41)
+
 
     def nominal_power_loop():
         logger.debug(
             "FC Board Stats",
             bytes_remaining=gc.mem_free(),
         )
+
+        all_faces_on()
 
         uhf_packet_manager.send(config.radio.license.encode("utf-8"))
 
