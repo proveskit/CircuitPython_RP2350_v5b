@@ -4,8 +4,7 @@ import time
 import board
 import digitalio
 from lib.adafruit_mcp230xx.mcp23017 import MCP23017
-from lib.adafruit_tca9548a import TCA9548A  
-
+from lib.adafruit_tca9548a import TCA9548A
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
@@ -24,7 +23,8 @@ from lib.pysquared.logger import Logger
 from lib.pysquared.nvm.counter import Counter
 from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
-#from lib.pysquared.sleep_helper import SleepHelper
+
+# from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
 from version import __version__
 
@@ -47,33 +47,37 @@ watchdog.pet()
 logger.debug("Initializing Config")
 config: Config = Config("config.json")
 
+
 def get_temp(sensor):
     for i in range(1000):
         print(sensor.get_temperature().value)
         time.sleep(0.1)
 
+
 SPI0_CS0 = initialize_pin(logger, board.SPI0_CS0, digitalio.Direction.OUTPUT, True)
 SPI1_CS0 = initialize_pin(logger, board.SPI1_CS0, digitalio.Direction.OUTPUT, True)
 
-#manually set the pin high to allow mcp to be detected
-GPIO_RESET = initialize_pin(logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True),
+# manually set the pin high to allow mcp to be detected
+GPIO_RESET = (
+    initialize_pin(logger, board.GPIO_EXPANDER_RESET, digitalio.Direction.OUTPUT, True),
+)
 
 i2c1 = initialize_i2c_bus(
     logger,
-    board.I2C1_SCL,
-    board.I2C1_SDA,
+    board.SCL1,
+    board.SDA1,
     100000,
 )
 
 i2c0 = initialize_i2c_bus(
     logger,
-    board.I2C0_SCL,
-    board.I2C0_SDA,
+    board.SCL0,
+    board.SDA0,
     100000,
 )
 
 
-mcp = MCP23017(i2c1) 
+mcp = MCP23017(i2c1)
 
 
 # #GPB
@@ -83,9 +87,9 @@ FACE1_ENABLE = mcp.get_pin(10)
 FACE2_ENABLE = mcp.get_pin(11)
 FACE3_ENABLE = mcp.get_pin(12)
 FACE5_ENABLE = mcp.get_pin(13)
-#READ ONLY
-#CHARGE
-    
+# READ ONLY
+# CHARGE
+
 # GPA
 ENABLE_HEATER = mcp.get_pin(0)
 PAYLOAD_PWR_ENABLE = mcp.get_pin(1)
@@ -104,7 +108,6 @@ FACE2_ENABLE.direction = digitalio.Direction.OUTPUT
 FACE3_ENABLE.direction = digitalio.Direction.OUTPUT
 ENABLE_HEATER.direction = digitalio.Direction.OUTPUT
 PAYLOAD_PWR_ENABLE.direction = digitalio.Direction.OUTPUT
-
 
 
 # # TODO(nateinaction): fix spi init
@@ -135,7 +138,7 @@ sband_radio = SX1280Manager(
 )
 
 
-#sleep_helper = SleepHelper(logger, config, watchdog)
+# sleep_helper = SleepHelper(logger, config, watchdog)
 
 uhf_radio = RFM9xManager(
     logger,
@@ -171,7 +174,6 @@ beacon = Beacon(
 )
 
 
-
 # Face Control Helper Functions
 def all_faces_off():
     """
@@ -203,7 +205,7 @@ mux_reset = initialize_pin(logger, board.MUX_RESET, digitalio.Direction.OUTPUT, 
 all_faces_on()
 time.sleep(0.1)
 mux_reset.value = True
-tca = TCA9548A(i2c0, address=int(0x77)) #all 3 connected to high
+tca = TCA9548A(i2c0, address=int(0x77))  # all 3 connected to high
 
 
 # # Light Sensors
@@ -289,7 +291,7 @@ try:
 except Exception:
     logger.debug("WARNING!!! Temp sensor 4 failed (Z- Face Bottom pins")
     temp_sensors.append(None)
-#these are the bottom 6 pins on the z- face connection, uncomment if that is where you plug in a face for the z- board
+# these are the bottom 6 pins on the z- face connection, uncomment if that is where you plug in a face for the z- board
 # try:
 #     sensor = MCP9808Manager(logger, tca[6], addr=24)
 #     temp_sensors.append(sensor)
