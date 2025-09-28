@@ -130,7 +130,8 @@ beacon = Beacon(
     uhf_packet_manager,
     time.monotonic(),
     imu,
-    magnetometer,
+    # TODO (mikefly123): add back in magnetometer once it is fixed upstream
+    # magnetometer,
     uhf_radio,
     sband_radio,
 )
