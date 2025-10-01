@@ -12,6 +12,7 @@ from lib.adafruit_tca9548a import TCA9548A  # This is Hacky V5a Devel Stuff###
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
+from lib.pysquared.file_validation.manager.file_validation import FileValidationManager
 from lib.pysquared.hardware.burnwire.manager.burnwire import BurnwireManager
 from lib.pysquared.hardware.busio import _spi_init, initialize_i2c_bus
 from lib.pysquared.hardware.digitalio import initialize_pin
@@ -29,7 +30,6 @@ from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
-from pysquared.file_validation.manager.file_validation import FileValidationManager
 from version import __version__
 
 rtc = MicrocontrollerManager()
