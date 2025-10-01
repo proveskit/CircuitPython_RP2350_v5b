@@ -121,8 +121,7 @@ try:
         uhf_packet_manager,
         boot_time,
         imu,
-        # TODO (mikefly123): add back in magnetometer once it is fixed upstream
-        # magnetometer,
+        magnetometer,
         uhf_radio,
         sband_radio,
         error_count,
