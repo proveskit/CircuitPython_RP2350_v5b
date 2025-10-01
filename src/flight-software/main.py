@@ -60,15 +60,15 @@ try:
 
     i2c1 = initialize_i2c_bus(
         logger,
-        board.I2C1_SCL,
-        board.I2C1_SDA,
+        board.SCL1,
+        board.SDA1,
         100000,
     )
 
     i2c0 = initialize_i2c_bus(
         logger,
-        board.I2C0_SCL,
-        board.I2C0_SDA,
+        board.SCL0,
+        board.SDA0,
         100000,
     )
 
