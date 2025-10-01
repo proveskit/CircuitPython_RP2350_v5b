@@ -140,7 +140,9 @@ try:
 
         cdh.listen_for_commands(10)
 
-        sleep_helper.safe_sleep(config.sleep_duration)
+        beacon.send()
+
+        cdh.listen_for_commands(config.sleep_duration)
 
     try:
         logger.info("Entering main loop")
