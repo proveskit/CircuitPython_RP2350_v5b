@@ -29,6 +29,7 @@ from lib.pysquared.protos.power_monitor import PowerMonitorProto
 from lib.pysquared.rtc.manager.microcontroller import MicrocontrollerManager
 from lib.pysquared.sleep_helper import SleepHelper
 from lib.pysquared.watchdog import Watchdog
+from pysquared.file_validation.manager.file_validation import FileValidationManager
 from version import __version__
 
 rtc = MicrocontrollerManager()
@@ -191,6 +192,8 @@ def all_faces_on():
     FACE3_ENABLE.value = True
     FACE4_ENABLE.value = True
 
+
+file_validator = FileValidationManager(logger)
 
 ## Face Sensor Stuff ##
 
