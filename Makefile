@@ -1,4 +1,4 @@
-PYSQUARED_VERSION ?= v2.0.0-alpha-25w40
+PYSQUARED_VERSION ?= v2.0.0-alpha-25w40a
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)\#subdirectory=circuitpython-workspaces/flight-software
 BOARD_MOUNT_POINT ?= ""
 BOARD_TTY_PORT ?= ""
