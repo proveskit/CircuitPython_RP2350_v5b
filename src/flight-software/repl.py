@@ -13,6 +13,9 @@ from lib.pysquared.hardware.busio import _spi_init, initialize_i2c_bus
 from lib.pysquared.hardware.digitalio import initialize_pin
 from lib.pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
 from lib.pysquared.hardware.light_sensor.manager.veml7700 import VEML7700Manager
+from lib.pysquared.hardware.load_switch.manager.loadswitch_manager import (
+    LoadSwitchManager,
+)
 from lib.pysquared.hardware.magnetometer.manager.lis2mdl import LIS2MDLManager
 from lib.pysquared.hardware.power_monitor.manager.ina219 import INA219Manager
 from lib.pysquared.hardware.radio.manager.rfm9x import RFM9xManager
@@ -173,28 +176,34 @@ beacon = Beacon(
     sband_radio,
 )
 
+load_switch_0 = LoadSwitchManager(FACE0_ENABLE, True)
+load_switch_1 = LoadSwitchManager(FACE1_ENABLE, True)
+load_switch_2 = LoadSwitchManager(FACE2_ENABLE, True)
+load_switch_3 = LoadSwitchManager(FACE3_ENABLE, True)
+load_switch_4 = LoadSwitchManager(FACE4_ENABLE, True)
+
 
 # Face Control Helper Functions
 def all_faces_off():
     """
     This function turns off all of the faces. Note the load switches are disabled low.
     """
-    FACE0_ENABLE.value = False
-    FACE1_ENABLE.value = False
-    FACE2_ENABLE.value = False
-    FACE3_ENABLE.value = False
-    FACE4_ENABLE.value = False
+    load_switch_0.disable_load()
+    load_switch_1.disable_load()
+    load_switch_2.disable_load()
+    load_switch_3.disable_load()
+    load_switch_4.disable_load()
 
 
 def all_faces_on():
     """
     This function turns on all of the faces. Note the load switches are enabled high.
     """
-    FACE0_ENABLE.value = True
-    FACE1_ENABLE.value = True
-    FACE2_ENABLE.value = True
-    FACE3_ENABLE.value = True
-    FACE4_ENABLE.value = True
+    load_switch_0.enable_load()
+    load_switch_1.enable_load()
+    load_switch_2.enable_load()
+    load_switch_3.enable_load()
+    load_switch_4.enable_load()
 
 
 ## Face Sensor Stuff ##
