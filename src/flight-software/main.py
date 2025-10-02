@@ -197,6 +197,10 @@ try:
 
         cdh.listen_for_commands(10)
 
+        beacon.send()
+
+        cdh.listen_for_commands(config.sleep_duration)
+
     try:
         logger.info("Entering main loop")
         while True:
