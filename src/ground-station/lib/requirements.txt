@@ -1,4 +1,4 @@
 adafruit-circuitpython-asyncio @ git+https://github.com/adafruit/adafruit_circuitpython_asyncio@1.3.3
 adafruit-circuitpython-rfm==1.0.3
 adafruit-circuitpython-ticks==1.1.1
-proveskit-ground-station @ git+https://github.com/proveskit/circuitpython_ground_station@0.0.1
+pysquared-ground-station @ git+https://github.com/proveskit/pysquared@d1b22be#subdirectory=circuitpython-workspaces/ground-station
