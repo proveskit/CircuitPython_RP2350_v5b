@@ -1,5 +1,6 @@
 PYSQUARED_VERSION ?= v2.0.0-alpha-25w40a
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)\#subdirectory=circuitpython-workspaces/flight-software
+PYSQUARED_GS ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)\#subdirectory=circuitpython-workspaces/ground-station
 BOARD_MOUNT_POINT ?= ""
 BOARD_TTY_PORT ?= ""
 VERSION ?= $(shell git tag --points-at HEAD --sort=-creatordate < /dev/null | head -n 1)
@@ -32,6 +33,11 @@ download-libraries-%: uv .venv ## Download the required libraries
 	@echo "Downloading libraries for $*..."
 	@$(UV) pip install --requirement src/$*/lib/requirements.txt --target src/$*/lib --no-deps --upgrade --quiet
 	@$(UV) pip --no-cache install $(PYSQUARED) --target src/$*/lib --no-deps --upgrade --quiet
+
+	@if [ "$*" = "ground-station" ]; then \
+		echo "Also downloading GS..."; \
+		$(UV) pip --no-cache install $(PYSQUARED_GS) --target src/$*/lib --no-deps --upgrade --quiet; \
+	fi
 
 	@rm -rf src/$*/lib/*.dist-info
 	@rm -rf src/$*/lib/.lock
