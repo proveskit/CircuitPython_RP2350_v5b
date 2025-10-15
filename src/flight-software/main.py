@@ -9,6 +9,7 @@ from lib.proveskit_rp2350_v5b.register import Register
 from lib.pysquared.beacon import Beacon
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
+from lib.pysquared.config.jokes_config import JokesConfig
 from lib.pysquared.hardware.busio import _spi_init, initialize_i2c_bus
 from lib.pysquared.hardware.digitalio import initialize_pin
 from lib.pysquared.hardware.imu.manager.lsm6dsox import LSM6DSOXManager
@@ -52,6 +53,7 @@ try:
 
     logger.debug("Initializing Config")
     config: Config = Config("config.json")
+    jokes_config: JokesConfig = JokesConfig("jokes.json")
 
     mux_reset = initialize_pin(
         logger, board.MUX_RESET, digitalio.Direction.OUTPUT, False
@@ -113,7 +115,7 @@ try:
         0.2,
     )
 
-    cdh = CommandDataHandler(logger, config, uhf_packet_manager)
+    cdh = CommandDataHandler(logger, config, uhf_packet_manager, jokes_config)
 
     beacon = Beacon(
         logger,

@@ -22,7 +22,7 @@
       "modulation_type": 0,
       "node_address": 1
     },
-    "license": "",
+    "license": "HHH",
     "lora": {
       "ack_delay": 0.2,
       "coding_rate": 8,
