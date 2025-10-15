@@ -1,4 +1,4 @@
-PYSQUARED_VERSION ?= v2.0.0-alpha-25w40a
+PYSQUARED_VERSION ?= copilot/fix-7bfb9c49-466e-42db-a6be-dece956d6d8c
 PYSQUARED ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)\#subdirectory=circuitpython-workspaces/flight-software
 PYSQUARED_GS ?= git+https://github.com/proveskit/pysquared@$(PYSQUARED_VERSION)\#subdirectory=circuitpython-workspaces/ground-station
 BOARD_MOUNT_POINT ?= ""

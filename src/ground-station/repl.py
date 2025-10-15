@@ -4,6 +4,7 @@ from busio import SPI
 from lib.ground_station.ground_station import GroundStation
 from lib.pysquared.cdh import CommandDataHandler
 from lib.pysquared.config.config import Config
+from lib.pysquared.config.jokes_config import JokesConfig
 from lib.pysquared.hardware.busio import _spi_init
 from lib.pysquared.hardware.digitalio import initialize_pin
 from lib.pysquared.hardware.radio.manager.rfm9x import RFM9xManager
@@ -16,6 +17,7 @@ logger: Logger = Logger(
     colorized=False,
 )
 config: Config = Config("config.json")
+jokes_config: JokesConfig = JokesConfig("jokes.json")
 
 spi0: SPI = _spi_init(
     logger,
@@ -40,11 +42,7 @@ packet_manager = PacketManager(
     0.2,
 )
 
-cdh = CommandDataHandler(
-    logger,
-    config,
-    packet_manager,
-)
+cdh = CommandDataHandler(logger, config, packet_manager, jokes_config)
 
 ground_station = GroundStation(
     logger,
